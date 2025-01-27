@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>European DNDP Map</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        #map {
+            height: 50vh;
+            margin: 1rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+        }
+
+        #tableContainer {
+            margin: 1rem auto;
+            max-width: 90%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background-color: #003366;
+            color: white;
+        }
+
+        table th, table td {
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tbody tr:hover {
+            background-color: #FFD700;
+        }
+
+        a {
+            color: #003366;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .highlight {
+            background-color: #FFD700 !important;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #003366;
+            color: white;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>European Distribution Network Development Plans (DNDPs)</h1>
+</header>
+
+<div id="map"></div>
+<div id="tableContainer"></div>
+
+<footer>
+    <!-- <p>&copy; 2025 EU DSO Entity. Proudly All rights reserved.</p> -->
+     <p>&copy; 2025 EU DSO Entity. All rights reserved. <br>Proudly coded and hosted by Stephan</p>
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const map = L.map('map').setView([51.1657, 10.4515], 4);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        const dndpData = [
+            { name: 'Enedis', country: 'France', lat: 48.890560, lng: 2.245330, website: 'https://www.enedis.fr', dndp: 'https://www.enedis.fr/sites/default/files/documents/pdf/network-development-plan-2023-preliminary-document.pdf', date: '01/01/2023' },
+            { name: 'Wiener Netze GmbH', country: 'Austria', lat: 48.183053, lng: 16.424791, website: 'https://www.wienernetze.at', dndp: 'https://www.wienernetze.at/o/document/vnep_2024_wiener_netze_veroeffentlicht', date: '30/09/2024' },
+            { name: 'Enea Operator Sp. z o.o.', country: 'Poland', lat: 52.449439, lng: 16.893927, website: 'https://www.operator.enea.pl/', dndp: 'https://www.operator.enea.pl/uploads-ev2/Operator/teczka-prasowa/Komunikaty/2023/23.08.2023/Plan%20Rozwoju%20Enea%20Operator%20na%20lata%202023-2028%20%28uzgodniony%20rok%202023%29%20-%20do%20publikacji%20na%20stronie.pdf', date: '23/08/2023' },
+            { name: 'Elektrilevi OÜ', country: 'Estonia', lat: 59.417907, lng: 24.757497, website: 'https://elektrilevi.ee', dndp: 'https://public-docs.elektrilevi.ee/2/11/jaotusvorgu_arengukava_aastani_2035_ddf1a76dad.pdf', date: '01/01/2023' }
+        ];
+
+        const markers = [];
+
+        // Create table dynamically
+        const tableContainer = document.getElementById('tableContainer');
+        const table = document.createElement('table');
+        table.id = 'dndpTable';
+        table.className = 'display';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>Website</th>
+                    <th>DNDP</th>
+                    <th>Publishing Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${dndpData.map(d => `
+                    <tr data-lat="${d.lat}" data-lng="${d.lng}">
+                        <td>${d.name}</td>
+                        <td>${d.country}</td>
+                        <td><a href="${d.website}" target="_blank">Website</a></td>
+                        <td><a href="${d.dndp}" target="_blank">DNDP</a></td>
+                        <td>${d.date}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+        tableContainer.appendChild(table);
+
+        dndpData.forEach((d) => {
+            const marker = L.marker([d.lat, d.lng]).addTo(map);
+            marker.bindPopup(`<b>${d.name}</b><br>${d.country}<br><a href="${d.dndp}" target="_blank">View DNDP</a>`);
+            marker.on('mouseover', () => {
+                $(`#dndpTable tbody tr`).each(function () {
+                    const rowLat = parseFloat($(this).attr('data-lat'));
+                    const rowLng = parseFloat($(this).attr('data-lng'));
+                    if (rowLat === d.lat && rowLng === d.lng) {
+                        $(this).addClass('highlight');
+                    }
+                });
+            });
+            marker.on('mouseout', () => {
+                $(`#dndpTable tbody tr`).removeClass('highlight');
+            });
+            markers.push(marker);
+        });
+
+        $('#dndpTable').DataTable();
+
+        $('#dndpTable tbody').on('mouseover', 'tr', function () {
+            const lat = parseFloat($(this).attr('data-lat'));
+            const lng = parseFloat($(this).attr('data-lng'));
+            markers.forEach((marker) => {
+                const markerLatLng = marker.getLatLng();
+                if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
+                    marker.openPopup();
+                }
+            });
+        });
+
+        $('#dndpTable tbody').on('mouseout', 'tr', function () {
+            const lat = parseFloat($(this).attr('data-lat'));
+            const lng = parseFloat($(this).attr('data-lng'));
+            markers.forEach((marker) => {
+                const markerLatLng = marker.getLatLng();
+                if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
+                    marker.closePopup();
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
