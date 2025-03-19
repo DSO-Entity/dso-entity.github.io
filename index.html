@@ -264,6 +264,7 @@
                     <th>Country</th>
                     <th>Website</th>
                     <th>DNDP</th>
+                    <th>Capacity Map</th>
                     <th>Connections</th>
                     <th>Network length (km)</th>
                     <th>Annual distributed energy (TWh)</th>
@@ -275,8 +276,9 @@
                     <tr data-lat="${d.lat}" data-lng="${d.lng}">
                         <td>${d.dso}</td>
                         <td>${d.country}</td>
-                        <td><a href="${d.website}" target="_blank">Website</a></td>
-                        <td><a href="${d.dndp}" target="_blank">DNDP</a></td>
+                        <td><a href="${d.dso_website}" target="_blank">Website</a></td>
+                        <td>${d.dndp ? `<a href="${d.dndp}" target="_blank">DNDP</a>` : ''}</td>
+                        <td>${d.capacity_map ? `<a href="${d.capacity_map}" target="_blank">Capacity Map</a>` : ''}</td>
                         <td>${d.connections}</td>
                         <td>${d.network_length}</td>
                         <td>${d.distributed_energy}</td>
@@ -289,7 +291,8 @@
 
             dndpData.forEach((d) => {
                 const marker = L.marker([d.lat, d.lng]).addTo(map);
-                marker.bindPopup(`<b>${d.dso}</b><br>${d.country}<br><a href="${d.dndp}" target="_blank">View DNDP</a>`);
+                // marker.bindPopup(`<b>${d.dso}</b><br>${d.country}<br><a href="${d.dndp}" target="_blank">View DNDP</a>`);
+                marker.bindPopup(`<b>${d.dso}</b><br>${d.country}`);
                 marker.on('mouseover', () => {
                     $(`#dndpTable tbody tr`).each(function () {
                         const rowLat = parseFloat($(this).attr('data-lat'));
